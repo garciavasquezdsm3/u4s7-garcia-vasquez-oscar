@@ -1,29 +1,56 @@
 {% extends 'core/base.html' %}
 
 {% block contenido %}
-  <h1 class="text-2xl font-bold mb-6">Servicios</h1>
-  <a href="{% url 'crear_servicio' %}" class="inline-block mb-4 bg-blue-600 text-white px-4 py-2 rounded-lg">+ Nuevo servicio</a>
-  <table class="w-full border border-slate-200 rounded-lg overflow-hidden">
-    <thead class="bg-slate-100">
-      <tr>
-        <th class="text-left px-4 py-2">Servicio</th>
-        <th class="text-left px-4 py-2">Precio</th>
-        <th class="text-left px-4 py-2">Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for servicio in servicios %}
-      <tr class="border-t border-slate-200">
-        <td class="px-4 py-2">{{ servicio.titulo }}</td>
-        <td class="px-4 py-2">${{ servicio.precio }}</td>
-        <td class="px-4 py-2">
-          <a href="{% url 'editar_servicio' servicio.pk %}" class="text-blue-600 underline">Editar</a>
-          <a href="{% url 'eliminar_servicio' servicio.pk %}" class="text-red-600 underline ml-3">Eliminar</a>
-        </td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="3" class="px-4 py-6 text-center text-slate-500">Todavía no hay servicios.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+    <h1 class="text-2xl font-bold">Servicios</h1>
+    <a href="{% url 'crear_servicio' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">+ Nuevo servicio</a>
+  </div>
+
+  <!-- Barra de Búsqueda -->
+  <form method="GET" class="mb-6 flex gap-2">
+    <input type="text" name="q" value="{{ query }}" placeholder="Buscar servicio por título..." class="border border-slate-300 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+    <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg transition">Buscar</button>
+    {% if query %}
+    <a href="{% url 'servicios' %}" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg transition flex items-center">Limpiar</a>
+    {% endif %}
+  </form>
+
+  <div class="overflow-x-auto bg-white border border-slate-200 rounded-lg shadow-sm">
+    <table class="w-full text-left border-collapse">
+      <thead class="bg-slate-100 text-slate-700">
+        <tr>
+          <th class="px-4 py-3 font-semibold">Servicio</th>
+          <th class="px-4 py-3 font-semibold">Precio</th>
+          <th class="px-4 py-3 font-semibold">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-200">
+        {% for servicio in servicios %}
+        <tr class="hover:bg-slate-50 transition">
+          <td class="px-4 py-3">{{ servicio.titulo }}</td>
+          <td class="px-4 py-3">${{ servicio.precio }}</td>
+          <td class="px-4 py-3">
+            <a href="{% url 'editar_servicio' servicio.pk %}" class="text-blue-600 hover:underline">Editar</a>
+            <a href="{% url 'eliminar_servicio' servicio.pk %}" class="text-red-600 hover:underline ml-3">Eliminar</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="px-4 py-8 text-center text-slate-500">No se encontraron servicios.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  {% if servicios.has_other_pages %}
+  <div class="mt-6 flex justify-center items-center gap-2">
+    {% if servicios.has_previous %}
+      <a href="?q={{ query }}&page={{ servicios.previous_page_number }}" class="px-3 py-1 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition">Anterior</a>
+    {% endif %}
+    <span class="text-slate-600 text-sm">Página {{ servicios.number }} de {{ servicios.paginator.num_pages }}</span>
+    {% if servicios.has_next %}
+      <a href="?q={{ query }}&page={{ servicios.next_page_number }}" class="px-3 py-1 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition">Siguiente</a>
+    {% endif %}
+  </div>
+  {% endif %}
 {% endblock %}

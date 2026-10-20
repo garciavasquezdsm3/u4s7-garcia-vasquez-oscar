@@ -39,3 +39,33 @@ class AuthAndServicesTestCase(TestCase):
         response = self.client.get('/servicios/')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Servicio User 1')
+
+    def test_servicios_search_and_pagination(self):
+        self.client.login(username='user1', password='password123')
+        # Create 6 services for user1 to test pagination (page size 5)
+        for i in range(1, 7):
+            Servicio.objects.create(
+                propietario=self.user1,
+                titulo=f'Servicio Alpha {i}',
+                descripcion=f'Desc {i}',
+                precio=50.00 * i,
+                categoria='Cat'
+            )
+        Servicio.objects.create(
+            propietario=self.user1,
+            titulo='Beta Test',
+            descripcion='Desc Beta',
+            precio=99.00,
+            categoria='Cat'
+        )
+
+        # Test search query 'Alpha'
+        response = self.client.get('/servicios/?q=Alpha')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Servicio Alpha 6')
+        self.assertNotContains(response, 'Beta Test')
+
+        # Test pagination page 1
+        response = self.client.get('/servicios/?page=1')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Página 1 de 2')
